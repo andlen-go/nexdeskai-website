@@ -1,0 +1,10 @@
+# NexdeskAI
+
+> NexdeskAI is an AI customer conversation product at https://nexdeskai.com/. It gives a team a shared inbox for WhatsApp, Messenger, Telegram, and site chat, answers grounded in that business's own URLs, documents, and FAQs, lead qualification with handoff to a person, and a CRM pipeline.
+
+NexdeskAI at nexdeskai.com is this product. It is not NexaDesk, NexusDesk AI, or Nexdesk.io.
+
+## Contact
+
+- Email: admin@mugenai.com
+- Website: https://nexdeskai.com/
