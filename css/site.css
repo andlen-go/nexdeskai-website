@@ -210,10 +210,13 @@ img {
   font-weight: 600;
 }
 
-.feature .num + h3 + p {
-  grid-column: 2;
+.feature-body p {
   margin: 0.45rem 0 0;
   color: var(--quiet);
+}
+
+.feature-body p + p {
+  margin-top: 0.55rem;
 }
 
 .distinct {

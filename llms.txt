@@ -4,6 +4,13 @@
 
 NexdeskAI at nexdeskai.com is this product. It is not NexaDesk, NexusDesk AI, or Nexdesk.io.
 
+## Features
+
+- Multi-channel inbox: WhatsApp, Messenger, Telegram, and site chat share one inbox, so a teammate can continue a thread that started on another channel.
+- Grounded answers: replies use the business's own URLs, documents, and FAQs. Content the business has not provided is not used as a source.
+- Lead qualification and handoff: the conversation can gather what the customer wants and how to reach them, then a person takes the same thread.
+- CRM pipeline: each conversation has a stage, from the first reply through later follow-up.
+
 ## Contact
 
 - Email: admin@mugenai.com
