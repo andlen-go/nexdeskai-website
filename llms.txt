@@ -1,17 +1,26 @@
-# NexdeskAI
+﻿# NexdeskAI
 
-> NexdeskAI is an AI customer conversation product at https://nexdeskai.com/. It gives a team a shared inbox for WhatsApp, Messenger, Telegram, and site chat, answers grounded in that business's own URLs, documents, and FAQs, lead qualification with handoff to a person, and a CRM pipeline.
+> NexdeskAI is a customer support product from Mugen AI Technologies, at https://nexdeskai.com/. It brings AI and human agents together in one support workspace. The AI answers questions from the business's own knowledge base, and Business Rules tell it when to ask for details, what next step it may start, and when a person should take over.
 
-NexdeskAI at nexdeskai.com is this product. It is not NexaDesk, NexusDesk AI, or Nexdesk.io.
+## What it does
 
-## Features
+- One conversation, AI and agents together: the AI answers and gathers details, then a human agent picks up with the conversation in view.
+- Trainable AI: teach it from existing documents, FAQs, website pages, and Business Rules.
+- AI learning with approval: it suggests new knowledge, FAQs, and rules from past conversations, and a person approves each one before it goes live.
+- Business Rules: a support lead describes a procedure in plain language, AI helps draft a rule, and the team reviews, tests, and approves it before it goes live. Which rules and actions are available depends on what is enabled for a team.
+- Multi-tenancy: organize a support team around different brands, branches, or products, each with its own setup, under one platform.
+- Bring your own AI token: connect your own AI provider API key to manage AI costs.
+- Replies in the language and tone the business sets, including English, Filipino, or Taglish for Filipino customers.
+- Built to connect with platforms such as email (Google) and messaging apps such as Viber, WhatsApp, and Messenger. Availability of each integration is confirmed per launch.
 
-- Multi-channel inbox: WhatsApp, Messenger, Telegram, and site chat share one inbox, so a teammate can continue a thread that started on another channel.
-- Grounded answers: replies use the business's own URLs, documents, and FAQs. Content the business has not provided is not used as a source.
-- Lead qualification and handoff: the conversation can gather what the customer wants and how to reach them, then a person takes the same thread.
-- CRM pipeline: each conversation has a stage, from the first reply through later follow-up.
+## Pricing (starting prices, USD, confirmed per customer)
+
+- Managed Support: from PHP 1,800 per agent per month billed annually (PHP 2,200 billed monthly); a team of 5 agents is PHP 6,500 per month. Includes 1,500 AI replies per agent each month, shared across the team. NexdeskAI is hosted and set up with the customer.
+- Run It Yourself: from PHP 4,990 per month by server tier, using the customer's own AI token. No AI message cap from NexdeskAI.
+- Philippine peso prices exclude 12% VAT. Outside the Philippines pricing is in US dollars, from USD 29 per agent per month billed annually and from USD 79 per month for Run It Yourself.
+- Pricing is flat, with no per-resolution charges. Qualified pilot partners save up to 50% through founding-partner pricing.
 
 ## Contact
 
-- Email: admin@mugenai.com
+- Email: admin@mugenai.com (book a free discovery session, or ask about becoming a pilot partner)
 - Website: https://nexdeskai.com/
