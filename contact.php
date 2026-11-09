@@ -2,13 +2,14 @@
 /**
  * Contact form handler for the NexdeskAI landing page.
  *
- * Sends one plain-text email to the admin address using PHP mail(). On Cloudways
- * the server-wide SMTP add-on (Elastic Email or custom SMTP) routes mail(), so no
- * SMTP password lives in this repository.
+ * Sends one plain-text email to the admin address. By default it uses PHP mail(),
+ * which Cloudways routes through the server-wide email add-on when one is bound.
  *
- * Optional private overrides: a file named nexdeskai-mail.local.php one folder
- * above the webroot may return an array with 'to' and 'from'. It is never
- * committed.
+ * Optional private settings: a file named nexdeskai-mail.local.php one folder
+ * above the webroot may return an array with 'to', 'from' and, to send through an
+ * authenticated SMTP account instead of mail(), 'smtp' => array('host', 'port',
+ * 'secure' => 'tls'|'ssl'|'none', 'user', 'pass'). It is never committed, so no
+ * SMTP password lives in this repository.
  */
 
 $config = array(
@@ -101,6 +102,103 @@ function nx_rate_limited($ip, $limit, $window) {
     return $limited;
 }
 
+function nx_smtp_read($socket) {
+    $reply = '';
+    while (($line = fgets($socket, 1024)) !== false) {
+        $reply .= $line;
+        if (strlen($line) < 4 || $line[3] !== '-') {
+            break;
+        }
+    }
+    return $reply;
+}
+
+function nx_smtp_command($socket, $command, $expect) {
+    if ($command !== null) {
+        fwrite($socket, $command . "\r\n");
+    }
+    $reply = nx_smtp_read($socket);
+    if (strpos($reply, (string) $expect) !== 0) {
+        return trim($reply) !== '' ? trim($reply) : 'no reply from the SMTP server';
+    }
+    return true;
+}
+
+/**
+ * Minimal authenticated SMTP delivery. $smtp: host, port, secure (tls|ssl|none), user, pass.
+ * Returns true, or a short error string for the server log.
+ */
+function nx_smtp_send($smtp, $from, $to, $subject, $headers, $body) {
+    $host = isset($smtp['host']) ? $smtp['host'] : '';
+    $port = isset($smtp['port']) ? (int) $smtp['port'] : 587;
+    $secure = isset($smtp['secure']) ? $smtp['secure'] : 'tls';
+    if ($host === '') {
+        return 'smtp host is not set';
+    }
+    $target = ($secure === 'ssl' ? 'ssl://' : 'tcp://') . $host . ':' . $port;
+    $socket = @stream_socket_client($target, $errno, $errstr, 15);
+    if (!$socket) {
+        return 'connect failed: ' . $errstr;
+    }
+    stream_set_timeout($socket, 15);
+
+    $steps = array(array(null, 220), array('EHLO nexdeskai.com', 250));
+    if ($secure === 'tls') {
+        $steps[] = array('STARTTLS', 220);
+    }
+    foreach ($steps as $step) {
+        $result = nx_smtp_command($socket, $step[0], $step[1]);
+        if ($result !== true) {
+            fclose($socket);
+            return $result;
+        }
+    }
+    if ($secure === 'tls') {
+        if (!@stream_socket_enable_crypto($socket, true, STREAM_CRYPTO_METHOD_TLS_CLIENT)) {
+            fclose($socket);
+            return 'STARTTLS handshake failed';
+        }
+        $result = nx_smtp_command($socket, 'EHLO nexdeskai.com', 250);
+        if ($result !== true) {
+            fclose($socket);
+            return $result;
+        }
+    }
+
+    $steps = array();
+    if (!empty($smtp['user'])) {
+        $steps[] = array('AUTH LOGIN', 334);
+        $steps[] = array(base64_encode($smtp['user']), 334);
+        $steps[] = array(base64_encode(isset($smtp['pass']) ? $smtp['pass'] : ''), 235);
+    }
+    $steps[] = array('MAIL FROM:<' . $from . '>', 250);
+    $steps[] = array('RCPT TO:<' . $to . '>', 250);
+    $steps[] = array('DATA', 354);
+    foreach ($steps as $step) {
+        $result = nx_smtp_command($socket, $step[0], $step[1]);
+        if ($result !== true) {
+            fclose($socket);
+            return $result;
+        }
+    }
+
+    $message = implode("\r\n", array_merge(array(
+        'Date: ' . date('r'),
+        'Message-ID: <' . bin2hex(random_bytes(12)) . '@nexdeskai.com>',
+        'To: ' . $to,
+        'Subject: ' . $subject,
+    ), $headers)) . "\r\n\r\n" . $body;
+    $message = preg_replace('/(?<!\r)\n/', "\r\n", $message);
+    $message = preg_replace('/^\./m', '..', $message);
+
+    $result = nx_smtp_command($socket, $message . "\r\n.", 250);
+    if ($result === true) {
+        nx_smtp_command($socket, 'QUIT', 221);
+    }
+    fclose($socket);
+    return $result;
+}
+
 if (!isset($_SERVER['REQUEST_METHOD']) || $_SERVER['REQUEST_METHOD'] !== 'POST') {
     header('Allow: POST');
     nx_respond(405, array('ok' => false, 'message' => 'Please use the form on the page to send a request.'));
@@ -173,9 +271,20 @@ $headers = array(
     'X-Mailer: NexdeskAI contact form',
 );
 
-$sent = mail($config['to'], '=?UTF-8?B?' . base64_encode($subject) . '?=', $body, implode("\r\n", $headers));
+$encodedSubject = '=?UTF-8?B?' . base64_encode($subject) . '?=';
+if (!empty($config['smtp']) && is_array($config['smtp'])) {
+    $smtpError = nx_smtp_send($config['smtp'], $config['from'], $config['to'], $encodedSubject, $headers, $body);
+    $sent = ($smtpError === true);
+    if (!$sent) {
+        error_log('NexdeskAI contact form: SMTP failed: ' . $smtpError);
+    }
+} else {
+    $sent = mail($config['to'], $encodedSubject, $body, implode("\r\n", $headers));
+    if (!$sent) {
+        error_log('NexdeskAI contact form: mail() returned false');
+    }
+}
 if (!$sent) {
-    error_log('NexdeskAI contact form: mail() returned false');
     nx_respond(500, array('ok' => false, 'message' => 'We could not send your request right now. Please email us directly.'));
 }
 
