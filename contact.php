@@ -167,9 +167,8 @@ function nx_smtp_send($smtp, $from, $to, $subject, $headers, $body) {
 
     $steps = array();
     if (!empty($smtp['user'])) {
-        $steps[] = array('AUTH LOGIN', 334);
-        $steps[] = array(base64_encode($smtp['user']), 334);
-        $steps[] = array(base64_encode(isset($smtp['pass']) ? $smtp['pass'] : ''), 235);
+        $pass = isset($smtp['pass']) ? $smtp['pass'] : '';
+        $steps[] = array('AUTH PLAIN ' . base64_encode("\0" . $smtp['user'] . "\0" . $pass), 235);
     }
     $steps[] = array('MAIL FROM:<' . $from . '>', 250);
     $steps[] = array('RCPT TO:<' . $to . '>', 250);
